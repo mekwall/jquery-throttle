@@ -1,6 +1,8 @@
 #jQuery Throttle#
 A minimalistic function throttler for jQuery.
 
+Check out the [performance test](http://jsperf.com/jquery-throttle-methods) of the method used in this plugin.
+
 ##Usage##
 For now, see [test case on jsFiddle](http://jsfiddle.net/mekwall/2geJ9/) on how it's used.
 
