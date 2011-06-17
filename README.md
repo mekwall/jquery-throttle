@@ -1,6 +1,9 @@
 #jQuery Throttle#
 A minimalistic function throttler for jQuery.
 
+##Usage##
+For now, see [test case on jsFiddle](http://jsfiddle.net/mekwall/2geJ9/) on how it's used.
+
 ##Licensing##
 All code is open source and dual licensed under GPL and MIT. Check the individual licenses for more information.
 
