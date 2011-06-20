@@ -1,10 +1,36 @@
 #jQuery Throttle#
-A minimalistic function throttler for jQuery.
+A minimalistic function throttler and debouncer for jQuery (but works without it!).
 
 Check out the [performance test](http://jsperf.com/jquery-throttle-methods) of the method used in this plugin.
 
 ##Usage##
-For now, see [test case on jsFiddle](http://jsfiddle.net/mekwall/2geJ9/) on how it's used.
+
+Download the [latest version](https://raw.github.com/mekwall/jquery-throttle/master/src/jquery-throttle.min.js) and include it in your page.
+
+The most basic way to create a throttled function, pass it to $.throttle like this:
+
+    var fn = $.throttle(fn, [timeout], [callback], [delayed], [trailing]);
+	
+The same way goes when creating a debounced function:
+
+    var fn = $.debounce(fn, [timeout], [callback], [delayed], [trailing]);
+
+###Add a throttle-enabled bind method to jQuery###
+    $.fn.throttledBind = function(){
+        var args = [].slice.call(arguments),
+            an = (typeof args[1] === "function") ? 1 : 2;
+        if (typeof args[0] === "object") {
+            $.each(args[0], function(event, fn){
+                args[0][event] = $.throttle.apply(null, [fn].concat([].splice.call(args, 1, 5)));
+            });
+        } else {
+            args[an] = $.throttle.apply(null, [].splice.call(args, an, 6));
+        }
+        args.slice(0, an);
+        return this.bind.apply(this, args);
+    };
+
+See [test case on jsFiddle](http://jsfiddle.net/mekwall/2geJ9/) to see the above in action!
 
 ##Licensing##
 All code is open source and dual licensed under GPL and MIT. Check the individual licenses for more information.
