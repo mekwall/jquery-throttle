@@ -29,6 +29,12 @@ The same way goes when creating a debounced function:
         args.slice(0, an);
         return this.bind.apply(this, args);
     };
+	
+The above plugin works like the original [`.bind`](http://api.jquery.com/bind/) but with the extra arguments passed to `.throttle`.
+
+    $(window).throttledBind("scroll", function(){ console("Can only trigger every 2 seconds"); }, 2000);
+	
+###Test case###
 
 See [test case on jsFiddle](http://jsfiddle.net/mekwall/2geJ9/) to see the above in action!
 
