@@ -14,8 +14,21 @@ The most basic way to create a throttled function, pass it to $.throttle like th
 The same way goes when creating a debounced function:
 
     var fn = $.debounce(fn, [timeout], [callback], [delayed], [trailing]);
+	
+By default there will be a 100 ms. timeout on the throttling/debouncing, and both delayed execution and trailing is disabled.
 
-###Add a throttle-enabled bind method to jQuery###
+###Example: Reduce hammering on your server by debouncing ajax lookups###
+
+The below example will throttle the keyup event handler to only trigger every 250ms. It will have delayed execution enabled which means the event handler will trigger 250ms after the first keystroke, and not one more time until there's been a pause of at least 250ms.
+
+    $("#searchbox").keyup($.debounce(function(){
+	    // Add your ajax code here
+    }, 250, null, true));
+
+###Example: Add a throttle-enabled bind method to jQuery###
+
+To show you one of the usecases  powerful when you add this small plugin to jQuery. It will enable you to directly bind a throttled or debounced function to any event just as easy as a normal bind.
+
     $.fn.throttledBind = function(){
         var args = [].slice.call(arguments),
             an = (typeof args[1] === "function") ? 1 : 2;
