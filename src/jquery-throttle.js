@@ -1,51 +1,37 @@
 (function(window) {
-
+    '$:nomunge'; // used by YUI compressor
     var $ = window.jQuery || window.me || (window.me = {}),
-        t = $.throttle = function(fn, timeout, delayed, debounce, callback) {
+        throttle = function(fn, timeout, callback, delayed, trailing, debounce) {
             timeout || (timeout = 100);
-            var timer = false,
+            var timer = 0,
+                lastCall = 0,
                 hasCallback = (typeof callback === "function"),
                 startTimer = function(wrapper, args) {
-                    return setTimeout(function(){
-                        timer = false;
-                        if (delayed) { fn.apply(wrapper, args); }
+                    timer = setTimeout(function(){
+                        timer = 0;
+                        if (delayed || trailing) {
+                            fn.apply(wrapper, args);
+                            if (trailing) { lastCall = +new Date(); }
+                        }
                         if (hasCallback) { callback.apply(wrapper, args); }
                     }, timeout);
                 },
-                wrapper = debounce ?
-                    function(){
-                        if (!timer && !delayed) { fn.apply(this, arguments); }
-                        clearTimeout(timer);
-                        timer = startTimer(this, arguments);
-                    }:
-                    function(){
-                        if (timer) { return; }
-                        if (!delayed) { fn.apply(this, arguments); }
-                        timer = startTimer(this, arguments);
-                    };
-            wrapper.stop = function(){ clearTimeout(timer); console.log(timer); };
+                wrapper = function(){
+                    if (timer && !debounce) { return; }
+                    if (!timer && !delayed) {
+                        if (!trailing || (+new Date()-lastCall) > timeout) {
+                            fn.apply(this, arguments);
+                            if (trailing) { lastCall = +new Date(); }
+                        }
+                    }
+                    if (debounce || !trailing) { clearTimeout(timer); }
+                    startTimer(this, arguments);
+                }
             if ($.guid) { wrapper.guid = fn.guid = fn.guid || $.guid++; }
             return wrapper;
         };
-    
-    $.debounce = function(fn, timeout, delayed, callback) {
-        return t(fn, timeout, delayed, true, callback);
+    $.throttle = throttle;
+    $.debounce = function(fn, timeout, callback, delayed, trailing) {
+        return throttle(fn, timeout, callback, delayed, trailing, 1);
     };
-    
-    if (window.jQuery) {
-        $.fn.throttledBind = function(){
-            var args = [].slice.call(arguments),
-                an = (typeof args[1] === "function") ? 1 : 2;
-            if (typeof args[0] === "object") {
-                $.each(args[0], function(event, fn){
-                    args[0][event] = $.throttle.apply(null, [fn].concat([].splice.call(args, 1, 4)));
-                });
-            } else {
-                args[an] = $.throttle.apply(null, [].splice.call(args, an, 5));
-            }
-            args.slice(0, an);
-            return this.bind.apply(this, args);
-        };
-    }
-	
 })(this);
