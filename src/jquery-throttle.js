@@ -1,34 +1,51 @@
-(function($) {
-    $.throttle = function(fn, delay, cb) {
-        delay || (delay = 100);
-        var throttle = false,
-            callback = (typeof cb === "function");
-        return function(){
-            if (throttle) { return; }
-            throttle = setTimeout(function(){
-                throttle = false;
-                if (callback) cb.apply(this, arguments);
-            }, delay);
-            fn.apply(this, arguments);
+(function(window) {
+
+    var $ = window.jQuery || window.me || (window.me = {}),
+        t = $.throttle = function(fn, timeout, delayed, debounce, callback) {
+            timeout || (timeout = 100);
+            var timer = false,
+                hasCallback = (typeof callback === "function"),
+                startTimer = function(wrapper, args) {
+                    return setTimeout(function(){
+                        timer = false;
+                        if (delayed) { fn.apply(wrapper, args); }
+                        if (hasCallback) { callback.apply(wrapper, args); }
+                    }, timeout);
+                },
+                wrapper = debounce ?
+                    function(){
+                        if (!timer && !delayed) { fn.apply(this, arguments); }
+                        clearTimeout(timer);
+                        timer = startTimer(this, arguments);
+                    }:
+                    function(){
+                        if (timer) { return; }
+                        if (!delayed) { fn.apply(this, arguments); }
+                        timer = startTimer(this, arguments);
+                    };
+            wrapper.stop = function(){ clearTimeout(timer); console.log(timer); };
+            if ($.guid) { wrapper.guid = fn.guid = fn.guid || $.guid++; }
+            return wrapper;
         };
+    
+    $.debounce = function(fn, timeout, delayed, callback) {
+        return t(fn, timeout, delayed, true, callback);
     };
     
-    $.fn.throttledBind = function(){
-        var args = [].slice.call(arguments);
-        if (typeof args[0] === "object") {
-            $.each(args[0], function(event,fn){
-                args[0][event] = $.throttle(fn, args[1] || 100, args[2]);
-            });
-            args = args.splice(0,1);
-        } else {
-            if (typeof args[1] === "function") {
-                var an = 1;
-            } else if (typeof args[2] === "function") {
-                var an = 2;
+    if (window.jQuery) {
+        $.fn.throttledBind = function(){
+            var args = [].slice.call(arguments),
+                an = (typeof args[1] === "function") ? 1 : 2;
+            if (typeof args[0] === "object") {
+                $.each(args[0], function(event, fn){
+                    args[0][event] = $.throttle.apply(null, [fn].concat([].splice.call(args, 1, 4)));
+                });
+            } else {
+                args[an] = $.throttle.apply(null, [].splice.call(args, an, 5));
             }
-            args[an] = $.throttle(args[an], args[an+1] || 100, args[an+2]);
-            args = args.splice(0,an+1);
-        }
-        this.bind.apply(this, args);
-    };
-})(jQuery);
+            args.slice(0, an);
+            return this.bind.apply(this, args);
+        };
+    }
+	
+})(this);
