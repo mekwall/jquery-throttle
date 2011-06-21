@@ -1,14 +1,13 @@
 (function(window) {
-    '$:nomunge'; // used by YUI compressor
     var $ = window.jQuery || window.me || (window.me = {}),
         throttle = function(fn, timeout, callback, delayed, trailing, debounce) {
             timeout || (timeout = 100);
-            var timer = 0,
-                lastCall = 0,
+            var timer = false,
+                lastCall = false,
                 hasCallback = (typeof callback === "function"),
                 startTimer = function(wrapper, args) {
                     timer = setTimeout(function(){
-                        timer = 0;
+                        timer = false;
                         if (delayed || trailing) {
                             fn.apply(wrapper, args);
                             if (trailing) { lastCall = +new Date(); }
@@ -32,6 +31,6 @@
         };
     $.throttle = throttle;
     $.debounce = function(fn, timeout, callback, delayed, trailing) {
-        return throttle(fn, timeout, callback, delayed, trailing, 1);
+        return throttle(fn, timeout, callback, delayed, trailing, true);
     };
 })(this);
